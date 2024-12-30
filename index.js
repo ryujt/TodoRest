@@ -1,10 +1,15 @@
 const express = require('express')
+const cors = require('cors');
 const fs = require('fs')
 const path = require('path')
 const app = express()
+
 app.use(express.json())
+app.use(cors());
+
 const PORT = 3000
 const DATA_FILE = path.join(__dirname, 'todos.jsonl')
+
 function readTodos() {
   if (!fs.existsSync(DATA_FILE)) {
     return []
@@ -15,14 +20,17 @@ function readTodos() {
   }
   return data.split('\n').map(line => JSON.parse(line))
 }
+
 function writeTodos(todos) {
   const data = todos.map(todo => JSON.stringify(todo)).join('\n')
   fs.writeFileSync(DATA_FILE, data)
 }
+
 app.get('/todo', (req, res) => {
   const todos = readTodos()
   res.json(todos)
 })
+
 app.post('/todo', (req, res) => {
   const todos = readTodos()
   const newTodo = {
@@ -35,6 +43,7 @@ app.post('/todo', (req, res) => {
   writeTodos(todos)
   res.json(newTodo)
 })
+
 app.get('/todo/:id', (req, res) => {
   const todos = readTodos()
   const todo = todos.find(t => t.id === req.params.id)
@@ -43,6 +52,7 @@ app.get('/todo/:id', (req, res) => {
   }
   res.json(todo)
 })
+
 app.put('/todo/:id', (req, res) => {
   const todos = readTodos()
   const index = todos.findIndex(t => t.id === req.params.id)
@@ -54,6 +64,7 @@ app.put('/todo/:id', (req, res) => {
   writeTodos(todos)
   res.json(todos[index])
 })
+
 app.patch('/todo/:id', (req, res) => {
   const todos = readTodos()
   const index = todos.findIndex(t => t.id === req.params.id)
@@ -64,6 +75,7 @@ app.patch('/todo/:id', (req, res) => {
   writeTodos(todos)
   res.json(todos[index])
 })
+
 app.delete('/todo/:id', (req, res) => {
   const todos = readTodos()
   const newTodos = todos.filter(t => t.id !== req.params.id)
@@ -73,6 +85,7 @@ app.delete('/todo/:id', (req, res) => {
   writeTodos(newTodos)
   res.json({ success: true })
 })
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
